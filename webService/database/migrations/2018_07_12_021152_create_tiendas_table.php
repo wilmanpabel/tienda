@@ -15,6 +15,12 @@ class CreateTiendasTable extends Migration
     {
         Schema::create('tiendas', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('nombre');
+            $table->string('direccion');
+            $table->string('descripcion')->nullable();
+            $table->string('rubro')->nullable();
+            $table->string('nombre')->nullable();
+            $table->string('coordenadas')->nullable();
             $table->timestamps();
         });
     }
