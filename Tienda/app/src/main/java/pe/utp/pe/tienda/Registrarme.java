@@ -97,6 +97,7 @@ public class Registrarme extends AppCompatActivity implements LoaderCallbacks<Cu
                 //Toast.makeText(getApplicationContext(),"Login",Toast.LENGTH_LONG).show();
             }
         });
+
         regresar = (Button) findViewById(R.id.regresar);
         regresar.setOnClickListener(new OnClickListener() {
             @Override
@@ -105,6 +106,7 @@ public class Registrarme extends AppCompatActivity implements LoaderCallbacks<Cu
                 getApplicationContext().startActivity(princii);
             }
         });
+
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {

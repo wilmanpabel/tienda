@@ -105,7 +105,7 @@ public class Principal extends AppCompatActivity
             menu.getItem(0).setIcon(R.drawable.ic_menu_manage);
             menu.add(R.id.lista, 2, Menu.NONE, "Registrarme");
             menu.getItem(1).setIcon(R.drawable.ic_menu_share);
-            menu.add(R.id.lista, 3, Menu.NONE, "Pasajes");
+            menu.add(R.id.lista, 3, Menu.NONE, "Productos");
             menu.getItem(2).setIcon(R.drawable.ic_menu_gallery);
         }else{
             String URL = url2+"cliente/"+idusuario;
@@ -130,7 +130,7 @@ public class Principal extends AppCompatActivity
             MySingleton.getInstance(getApplicationContext()).addToRequestQueue(rq);
 
             Menu menu = navegacion.getMenu();
-                menu.add(R.id.lista, 1, Menu.NONE, "Pasajes");
+                menu.add(R.id.lista, 1, Menu.NONE, "Productos");
                 menu.getItem(0).setIcon(R.drawable.ic_menu_gallery);
                 menu.add(R.id.lista, 2, Menu.NONE, "Mis Viajes");
                 menu.getItem(1).setIcon(R.drawable.ic_menu_slideshow);
