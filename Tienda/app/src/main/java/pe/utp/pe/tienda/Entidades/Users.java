@@ -1,4 +1,4 @@
-package principal.android.utp.proyectoandroid.Entidades;
+package pe.utp.pe.tienda.Entidades;
 
 //Las entidades de los usuarios para el logeo
 

@@ -1,4 +1,4 @@
-package principal.android.utp.proyectoandroid.Data;
+package pe.utp.pe.tienda.Data;
 
 import android.content.Context;
 import android.content.Intent;

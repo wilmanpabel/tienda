@@ -1,4 +1,4 @@
-package principal.android.utp.proyectoandroid.controlador;
+package pe.utp.pe.tienda.controlador;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,18 +13,21 @@ import com.android.volley.toolbox.StringRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-import principal.android.utp.proyectoandroid.Vista.Principal;
+import pe.utp.pe.tienda.Vista.Confirguracion;
+import pe.utp.pe.tienda.Vista.Principal;
 
 public class Usuario  {
-    private String ulrControlador="http://192.168.55.206/anW/CONTROLADOR/UsuarioControlador.php";
+    private String ulrControlador= Confirguracion.urlControlador+"UsuarioControlador.php";
+    private String url2= Confirguracion.urlControladorDOs;
     private  String resp;
     public void ingresarASY(String usuario, String pass, final Context cnt){
-        String URL = ulrControlador+"?op=1&usuario="+usuario+"&password="+pass;
+        String URL = url2+"ingresar/"+usuario+"/"+pass;
         StringRequest stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
                     String rspta = String.valueOf(response).trim();
+                    System.out.print(response);
                     if(rspta.equals("0"))
                     {
                         Toast.makeText(cnt, "VERIFIQUE SUS CREDENCIALES", Toast.LENGTH_SHORT).show();
@@ -42,6 +45,7 @@ public class Usuario  {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                System.out.print(error);
                 Toast.makeText(cnt, "Error en el codigo "+error, Toast.LENGTH_SHORT).show();
             }
         }){

@@ -1,4 +1,4 @@
-package principal.android.utp.proyectoandroid.Vista;
+package pe.utp.pe.tienda.Vista;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -23,8 +23,9 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import principal.android.utp.proyectoandroid.R;
-import principal.android.utp.proyectoandroid.controlador.MySingleton;
+
+import pe.utp.pe.tienda.R;
+import pe.utp.pe.tienda.controlador.MySingleton;
 import static android.support.design.widget.Snackbar.make;
 /**
  * A simple {@link Fragment} subclass.
@@ -39,7 +40,7 @@ public class Facturas extends Fragment {
     ArrayList nombres =new ArrayList();
     ArrayList idfactura =new ArrayList();
     ArrayList productos =new ArrayList();
-    private  String  urlControlador="http://192.168.55.206/anW/CONTROLADOR/";
+    private  String  urlControlador=Confirguracion.urlControlador;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

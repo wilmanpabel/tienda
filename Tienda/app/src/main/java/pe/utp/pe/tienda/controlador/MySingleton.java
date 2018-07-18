@@ -1,4 +1,4 @@
-package principal.android.utp.proyectoandroid.controlador;
+package pe.utp.pe.tienda.controlador;
 
 import android.content.Context;
 import android.graphics.Bitmap;

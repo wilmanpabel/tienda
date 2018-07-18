@@ -1,12 +1,15 @@
-package principal.android.utp.proyectoandroid.Vista;
+package pe.utp.pe.tienda.Vista;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +26,17 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
-import principal.android.utp.proyectoandroid.R;
-import principal.android.utp.proyectoandroid.controlador.MySingleton;
+import pe.utp.pe.tienda.LoginActivity;
+import pe.utp.pe.tienda.R;
+import pe.utp.pe.tienda.controlador.MySingleton;
 
+import com.github.snowdream.android.widget.SmartImageView;
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static android.support.design.widget.Snackbar.make;
 
@@ -37,7 +45,8 @@ public class Productos extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private  String  urlControlador="http://192.168.55.206/anW/CONTROLADOR/";
+    private  String  urlControlador=Confirguracion.urlControlador;
+    private  String  url2=Confirguracion.urlControladorDOs;
     private ArrayList codigo  = new ArrayList();
     private ArrayList nombre = new ArrayList();
 
@@ -46,11 +55,12 @@ public class Productos extends Fragment {
     private ArrayList precio = new ArrayList();
     private ArrayList und = new ArrayList();
     private ArrayList stok = new ArrayList();
+    private ArrayList imagen = new ArrayList();
 
     Spinner spiner;
     ListView lista;
 
-    private String mParam1;
+    private String idusuario;
     private String mParam2;
 
     LayoutInflater layoutInflater;
@@ -71,9 +81,11 @@ public class Productos extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            idusuario = getArguments().getString("usu");
+
         }
+        Toast.makeText(getContext(),idusuario,Toast.LENGTH_LONG).show();
+
     }
 
     @Override
@@ -91,15 +103,16 @@ public class Productos extends Fragment {
         codigo.clear();
         nombre.clear();
         String URL = urlControlador+"CategoriaControlador.php?op=1";
-        StringRequest listaR = new StringRequest( URL, new Response.Listener<String>() {
+        String URL2 = url2+"empresas";
+        StringRequest listaR = new StringRequest( URL2, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
                     JSONArray jsonArray = new JSONArray(response);
-                    //System.out.println(response);
+                    System.out.println(response);
                     for(int i=0; i<jsonArray.length(); i++) {
-                        codigo.add(jsonArray.getJSONObject(i).getString("Id"));
-                        nombre.add(jsonArray.getJSONObject(i).getString("Nombre"));
+                        codigo.add(jsonArray.getJSONObject(i).getString("id"));
+                        nombre.add(jsonArray.getJSONObject(i).getString("nombre"));
 
                     }
                     spiner.setAdapter(new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line, nombre));
@@ -139,21 +152,26 @@ public class Productos extends Fragment {
         precio.clear();
         stok.clear();
         und.clear();
+        imagen.clear();
 
-        String URL = urlControlador+"ProductoControlador.php?op=1&codigo="+CodigoCategoria;
-        StringRequest listaR = new StringRequest( URL, new Response.Listener<String>() {
+        String URL = urlControlador+"ProductoControlador.php?op=1&codigo="+1;
+
+        String URL2 = url2+"pasajeEmpresa/"+CodigoCategoria;
+
+        StringRequest listaR = new StringRequest( URL2, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try
                 {
-                    //System.out.println(response);
+                    System.out.println(response);
                     JSONArray jsonArray = new JSONArray(response);
                     for(int i=0; i<jsonArray.length(); i++) {
-                        codigoProducto.add(jsonArray.getJSONObject(i).getString("Id"));
-                        nombreProducto.add(jsonArray.getJSONObject(i).getString("Nombre"));
+                        codigoProducto.add(jsonArray.getJSONObject(i).getString("id"));
+                        nombreProducto.add("Origen: "+jsonArray.getJSONObject(i).getString("origen_id")+"\n Destino: "+jsonArray.getJSONObject(i).getString("destinos_id")+"\n "+jsonArray.getJSONObject(i).getString("fecha"));
                         precio.add(jsonArray.getJSONObject(i).getString("precio"));
-                        stok.add(jsonArray.getJSONObject(i).getString("stok"));
-                        und.add(jsonArray.getJSONObject(i).getString("und"));
+                        stok.add(jsonArray.getJSONObject(i).getString("cantidad"));
+                        und.add(jsonArray.getJSONObject(i).getString("moneda"));
+                        imagen.add(jsonArray.getJSONObject(i).getString("moneda"));
                     }
                     lista.setAdapter(new miAdaptador(getActivity().getApplicationContext()));
                     lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -162,7 +180,7 @@ public class Productos extends Fragment {
                             String codigoPro = String.valueOf(codigoProducto.get(position));
                             //Toast.makeText(getContext(),codigoPro,Toast.LENGTH_LONG).show();
                             String stocka = String.valueOf(stok.get(position));
-                            modificarDatosDEproducto(codigoPro,stocka,CodigoCategoria);
+                            comprarPasaje(codigoPro,CodigoCategoria);
                         }
                     });
                 }catch (Exception ex)
@@ -180,38 +198,54 @@ public class Productos extends Fragment {
         });
         MySingleton.getInstance(getContext()).addToRequestQueue(listaR);
     }
-    public void modificarDatosDEproducto(final String id, String Stock, final int cat){
+
+
+
+
+
+    public void comprarPasaje(final String id,  final int cat){
         ///?op=5&stock=30&idproducto=2/
         AlertDialog.Builder dialogo= new AlertDialog.Builder(getContext());
-        final EditText NuevoN= new EditText(getContext());
-        NuevoN.setText(Stock);
-        dialogo.setView(NuevoN);
-        dialogo.setTitle("Editar Stock");
+        dialogo.setTitle("Comprar");
         dialogo.setNegativeButton("Cancelar",null);
-        dialogo.setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //Toast.makeText(getActivity().getApplicationContext(),NuevoN.getText().toString(),Toast.LENGTH_LONG).show();
-                String URLl = urlControlador+"ProductoControlador.php?op=5"+"&stock="+NuevoN.getText().toString()+"&idproducto="+id;
-                StringRequest cambiarStock =new StringRequest(URLl, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        //System.out.println(response);
-                        //Toast.makeText(getActivity().getApplicationContext(),response.toString(),Toast.LENGTH_LONG).show();
-
-                        make(getView(), response.toString(), Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                        CargarListView(cat);
+        //Toast.makeText(getContext(),idusuario,Toast.LENGTH_LONG).show();
+        if (idusuario.equals("0")){
+            dialogo.setMessage("Ingrese a su cuenta por favor");
+            dialogo.setNegativeButton("Ingresar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(getContext(), LoginActivity.class);
+                            getContext().startActivity(intent);
+                        }
                     }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+            );
+        }else{
+            dialogo.setPositiveButton("Comprar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //Toast.makeText(getActivity().getApplicationContext(),NuevoN.getText().toString(),Toast.LENGTH_LONG).show();
+                    String URLl = url2+"comprar/"+idusuario+"/"+id;
+                    StringRequest cambiarStock =new StringRequest(URLl, new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            //System.out.println(response);
+                            //Toast.makeText(getActivity().getApplicationContext(),response.toString(),Toast.LENGTH_LONG).show();
 
-                    }
-                });
-                MySingleton.getInstance(getContext()).addToRequestQueue(cambiarStock);
-                ///Enviar al  controlador para editar el producto..///:
-            }
-        });
+                            make(getView(), response.toString(), Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                            CargarListView(cat);
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+
+                        }
+                    });
+                    MySingleton.getInstance(getContext()).addToRequestQueue(cambiarStock);
+                    ///Enviar al  controlador para editar el producto..///:
+                }
+            });
+        }
+
         dialogo.show();
     }
 
@@ -219,6 +253,8 @@ public class Productos extends Fragment {
         Context context;
         LayoutInflater layoutInflater;
         TextView txtNombre,txtCodigo,lblPrecio,lblStok,lblUnd;
+
+        SmartImageView smartImage;
 
         public miAdaptador(Context context) {
             this.context = context;
@@ -250,7 +286,14 @@ public class Productos extends Fragment {
             lblPrecio = (TextView)viewGroup.findViewById(R.id.lprecio);
             lblStok = (TextView)viewGroup.findViewById(R.id.lstok);
             lblUnd = (TextView)viewGroup.findViewById(R.id.lund);
+            smartImage = (SmartImageView)viewGroup.findViewById(R.id.imagenProducto);
 
+            /// LLINK DE DONDE ESTA LA IMAGEN  DEL DESTINO /// con el campo imagen
+            String urlfinal = "https://www.peru.travel/Portals/_default/Images/Events/aniversario_ciudad_arequipa.jpg";
+
+            Rect rect = new Rect(smartImage.getLeft(),smartImage.getTop(),smartImage.getRight(),smartImage.getBottom());
+
+            smartImage.setImageUrl(urlfinal,rect);
             txtCodigo.setText(codigoProducto.get(i).toString());
             txtNombre.setText(nombreProducto.get(i).toString());
             lblPrecio.setText(precio.get(i).toString());
@@ -289,4 +332,12 @@ public class Productos extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+
+
+
+
+
+
+
 }

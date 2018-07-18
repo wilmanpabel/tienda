@@ -1,10 +1,11 @@
-package principal.android.utp.proyectoandroid.Vista;
+package pe.utp.pe.tienda.Vista;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,15 +18,19 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import principal.android.utp.proyectoandroid.R;
-import principal.android.utp.proyectoandroid.controlador.MySingleton;
+import pe.utp.pe.tienda.LoginActivity;
+import pe.utp.pe.tienda.R;
+import pe.utp.pe.tienda.Registrarme;
+import pe.utp.pe.tienda.controlador.MySingleton;
 
 import static android.support.design.widget.Snackbar.make;
 
@@ -39,7 +44,10 @@ public class Principal extends AppCompatActivity
     private ListView listaMenu;
     private ArrayAdapter<String> adaptador;
     DrawerLayout drawer;
-    String ulrControlador="http://192.168.55.206/anW/CONTROLADOR/UsuarioControlador.php?";
+
+   public String ulrControlador= Confirguracion.urlControlador;
+    public String url2= Confirguracion.urlControladorDOs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +72,24 @@ public class Principal extends AppCompatActivity
         toggle.syncState();
 
         Intent origen = getIntent();
-        idusuario = origen.getStringExtra("idusuario").trim().toString();
+        if(origen.hasExtra("idusuario")){
+            idusuario = origen.getStringExtra("idusuario").trim().toString();
+        }else{
+            idusuario = "0";
+        }
         navegacion = (NavigationView) findViewById(R.id.nav_view);
 
         completarDatosLeleralUsuario();
 
         navegacion.setNavigationItemSelectedListener(this);
 
+        Bundle idusu= new Bundle();
+        idusu.putString("usu",idusuario);
+        Productos proVF=new Productos();
+        proVF.setArguments(idusu);
+        android.support.v4.app.FragmentTransaction transaction=getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.contenedor,proVF);
+        transaction.commit();
     }
 
 
@@ -78,61 +97,51 @@ public class Principal extends AppCompatActivity
         View headerVista = navegacion.getHeaderView(0);
         nombre=(TextView) headerVista.findViewById(R.id.nombre);
         rol=(TextView)  headerVista.findViewById(R.id.cargo);
-        String URL = ulrControlador+"op=2&idusuario="+idusuario;
-        StringRequest rq=new StringRequest(URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try{
-                    JSONObject jsonObject=new JSONObject (response);
-                    String nombres=jsonObject.getString("nombres");
-                    String roll=jsonObject.getString("rol");
-                    nombre.setText(nombres);
-                    rol.setText(roll);
-                }catch (Exception e) {
-                    System.out.println(e);
+        if (idusuario.equals("0")) {
+            nombre.setText("No has ingresado");
+            rol.setText("");
+            Menu menu = navegacion.getMenu();
+            menu.add(R.id.lista, 1, Menu.NONE, "Ingresar");
+            menu.getItem(0).setIcon(R.drawable.ic_menu_manage);
+            menu.add(R.id.lista, 2, Menu.NONE, "Registrarme");
+            menu.getItem(1).setIcon(R.drawable.ic_menu_share);
+            menu.add(R.id.lista, 3, Menu.NONE, "Pasajes");
+            menu.getItem(2).setIcon(R.drawable.ic_menu_gallery);
+        }else{
+            String URL = url2+"cliente/"+idusuario;
+            StringRequest rq=new StringRequest(URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    try{
+                        System.out.println(response);
+
+                        nombre.setText(response.toString());
+                        rol.setText("");
+                    }catch (Exception e) {
+                        Log.d("error 2",e.getMessage());
+                    }
                 }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        });
-        MySingleton.getInstance(getApplicationContext()).addToRequestQueue(rq);
-
-        String URL2 = ulrControlador+"op=3&idusuario="+idusuario;
-        StringRequest reqMenu =new StringRequest(URL2, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try{
-                    JSONObject jsonObjectMenu=new JSONObject (response);
-                    Menu menu = navegacion.getMenu();
-                    String produc=jsonObjectMenu.getString("productos");
-                    String usuarios=jsonObjectMenu.getString("usuarios");
-                    String configuracion=jsonObjectMenu.getString("configuracion");
-                    if (produc.equals("si")){
-                        menu.add(R.id.lista, 1, Menu.NONE, "Productos");
-                        menu.getItem(0).setIcon(R.drawable.ic_menu_gallery);
-                    }
-                    if (usuarios.equals("si")){
-                        menu.add(R.id.lista, 2, Menu.NONE, "Clientes");
-                        menu.getItem(1).setIcon(R.drawable.ic_menu_slideshow);
-                    }
-                    if (configuracion.equals("si")){
-                        menu.add(R.id.lista, 3, Menu.NONE, "Facturas");
-                        menu.getItem(2).setIcon(R.drawable.ic_menu_manage);
-                    }
-                }catch (Exception e){
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
 
                 }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
+            });
+            MySingleton.getInstance(getApplicationContext()).addToRequestQueue(rq);
 
-            }
-        });
-        MySingleton.getInstance(getApplicationContext()).addToRequestQueue(reqMenu);
+            Menu menu = navegacion.getMenu();
+                menu.add(R.id.lista, 1, Menu.NONE, "Pasajes");
+                menu.getItem(0).setIcon(R.drawable.ic_menu_gallery);
+                menu.add(R.id.lista, 2, Menu.NONE, "Mis Viajes");
+                menu.getItem(1).setIcon(R.drawable.ic_menu_slideshow);
+                menu.add(R.id.lista, 3, Menu.NONE, "Facturas");
+                menu.getItem(2).setIcon(R.drawable.ic_menu_share);
+                menu.add(R.id.lista, 4, Menu.NONE, "Mis datos");
+                menu.getItem(2).setIcon(R.drawable.ic_menu_manage);
+                menu.add(R.id.lista, 5, Menu.NONE, "Cerrar Sesion");
+                menu.getItem(3).setIcon(R.drawable.ic_menu_camera);
+        }
+
     }
 
     @Override
@@ -179,14 +188,45 @@ public class Principal extends AppCompatActivity
     }
 
     public  void obtenerMenuNav(Integer id){
+        if (idusuario.equals("0")){
             if (id == 1) {
+                Intent intent = new Intent(this, LoginActivity.class);
+                this.startActivity(intent);
+                Toast.makeText(getApplicationContext(),"Login",Toast.LENGTH_LONG).show();
+            }
+            if (id == 2) {
+                Intent intent = new Intent(this, Registrarme.class);
+                this.startActivity(intent);
+                Toast.makeText(getApplicationContext(),"Registrarme",Toast.LENGTH_LONG).show();
+            }
+            if (id == 3) {
+                Bundle idusu= new Bundle();
+                idusu.putString("usu",idusuario);
+
                 Productos proVF=new Productos();
+                proVF.setArguments(idusu);
+                android.support.v4.app.FragmentTransaction transaction=getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.contenedor,proVF);
+                transaction.commit();
+            }
+        }else{
+            if (id == 1) {
+                Bundle idusu= new Bundle();
+                idusu.putString("usu",idusuario);
+
+                Productos proVF=new Productos();
+                proVF.setArguments(idusu);
                 android.support.v4.app.FragmentTransaction transaction=getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.contenedor,proVF);
                 transaction.commit();
             }
             if (id == 2) {
+                Bundle idusu= new Bundle();
+                idusu.putString("idusuario",idusuario);
+
                 Cliente cliVF=new Cliente ();
+                cliVF.setArguments(idusu);
+
                 android.support.v4.app.FragmentTransaction transaction=getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.contenedor,cliVF);
                 transaction.commit();
@@ -197,6 +237,17 @@ public class Principal extends AppCompatActivity
                 transaction.replace(R.id.contenedor,factuVF);
                 transaction.commit();
             }
+            if (id == 4) {
+              //  Intent intent = new Intent(this, Principal.class);
+              //  this.startActivity(intent);
+                Toast.makeText(getApplicationContext(),"Mis datos",Toast.LENGTH_LONG).show();
+            }
+            if (id == 5) {
+                Intent intent = new Intent(this, Principal.class);
+                this.startActivity(intent);
+                Toast.makeText(getApplicationContext(),"Ok",Toast.LENGTH_LONG).show();
+            }
+        }
         }
 
     @Override

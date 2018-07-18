@@ -10,7 +10,7 @@
         android:id="@+id/text1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Productos" />
+        android:text="Hacer click para comprar" />
 
     <Spinner
         android:id="@+id/categoria"
@@ -23,7 +23,7 @@
     <ListView
         android:id="@+id/lista"
         android:layout_width="match_parent"
-        android:layout_height="393dp"
+        android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/spnCategoria"
         android:layout_marginTop="100dp" />
